@@ -4,51 +4,70 @@ import os
 import shutil
 
 
-def organize():
-    if checkbox_var.get():
+def organize(extensoes, nomes_pastas):
+    extensoes_selecionadas = [ext for ext, var in zip(extensoes, checkbox_vars) if var.get()]
+    nomes_pastas_selecionados = [nome for nome, var in zip(nomes_pastas, checkbox_vars) if var.get()]
+
+    if extensoes_selecionadas:
         user = os.getlogin()
-        nome_pasta = 'Documents'
         diretorio = r'C:\Users\{}\Documents'.format(user)
-        nova_pasta = nome_pasta
         contador = 1
-        caminho_pasta = os.path.join(diretorio, nova_pasta)  # Caminho completo para a pasta
 
-        while os.path.exists(caminho_pasta):
-            # Se a pasta já existe, adiciona um número sequencial ao final do nome
-            nova_pasta = f'{nome_pasta}_{contador}'
-            contador += 1
-            caminho_pasta = os.path.join(diretorio, nova_pasta)
+        for nome_pasta in nomes_pastas_selecionados:
+            caminho_pasta = os.path.join(diretorio, nome_pasta)
 
-        os.mkdir(caminho_pasta)  # Cria a nova pasta
+            while os.path.exists(caminho_pasta):
+                # Se a pasta já existe, adiciona um número sequencial ao final do nome
+                nome_pasta = f'{nome_pasta}_{contador}'
+                contador += 1
+                caminho_pasta = os.path.join(diretorio, nome_pasta) # Caminho completo para a pasta
+
+            os.mkdir(caminho_pasta)  # Cria a nova pasta
 
         # Obter o caminho para o diretório de downloads
         diretorio_down = r'C:\Users\{}\Downloads'.format(user)
         pasta_downloads = os.path.join(diretorio_down)
 
-        # Obter todos os arquivos com a extensão .pdf na pasta de downloads
-        arquivos_pdf = [f for f in os.listdir(pasta_downloads) if f.endswith('.pdf')]
+        # Obter todos os arquivos com as extensões selecionadas na pasta de downloads
+        arquivos = [f for f in os.listdir(pasta_downloads) if os.path.splitext(f)[1] in extensoes_selecionadas]
 
-        # Mover os arquivos para a nova pasta
-        for arquivo in arquivos_pdf:
+        # Mover os arquivos para as respectivas pastas
+        for arquivo in arquivos:
             caminho_arquivo = os.path.join(pasta_downloads, arquivo)
-            shutil.move(caminho_arquivo, caminho_pasta)
+            extensao = os.path.splitext(arquivo)[1]
+            for nome_pasta, ext in zip(nomes_pastas_selecionados, extensoes_selecionadas):
+                if ext == extensao:
+                    caminho_pasta = os.path.join(diretorio, nome_pasta)
+                    shutil.move(caminho_arquivo, caminho_pasta)
 
-        messagebox.showinfo('Sucesso', 'Pasta criada com sucesso e arquivos PDF movidos!')
+        messagebox.showinfo('Sucesso', 'Pastas criadas com sucesso e arquivos movidos!')
+
     else:
-        messagebox.showwarning('Atenção', 'Você precisa selecionar a caixa de seleção.')
+        messagebox.showwarning('Atenção', 'Você precisa selecionar pelo menos uma extensão.')
 
 
-def button1():
+def open_second_window():
     # Criando janela secundária
     second_window = tk.Toplevel(janela)
     second_window.title('DocOgn')
     second_window.geometry('200x100')
 
-    checkbox = tk.Checkbutton(second_window, text='.pdf', variable=checkbox_var)
-    checkbox.pack()
+    # Criando caixa de seleção e botão para cada extensão desejada
+    extensoes = ['.pdf', '.docx', '.xlsx']  # Exemplo de extensões
+    nomes_pastas = ['Documents', 'WordFiles', 'ExcelFiles']  # Exemplo de nomes de pastas
 
-    button = tk.Button(second_window, text='Avançar', command=organize)
+    for extensao, nome_pasta, var in zip(extensoes, nomes_pastas, checkbox_vars):
+        checkbox = tk.Checkbutton(second_window, text=extensao, variable=var)
+        checkbox.pack()
+
+    button = tk.Button(second_window, text='Avançar',
+                       command=lambda: close_second_window(second_window, extensoes, nomes_pastas))
     button.pack()
+
+
+def close_second_window(window, extensoes, nomes_pastas):
+    organize(extensoes, nomes_pastas)
+    window.destroy()
 
 
 # Criando Janela Principal
@@ -60,14 +79,14 @@ texto_orientacao = tk.Label(janela, text='============= Machine Doc Organization
 texto_orientacao.grid(column=0, row=0)
 
 # Criando botões e atribuindo as respectivas funções
-botao = tk.Button(janela, text='Organizar Documentos', command=button1)
+botao = tk.Button(janela, text='Organizar Documentos', command=open_second_window)
 botao.grid(column=0, row=1)
 
 botao_2 = tk.Button(janela, text='Enviar e-mail')
 botao_2.grid(column=0, row=50)
 
-# Variável para armazenar o estado da caixa de seleção
-checkbox_var = tk.BooleanVar()
+# Criar uma lista de variáveis Booleanas para controlar as caixas de seleção
+checkbox_vars = [tk.BooleanVar() for _ in range(3)]
 
 janela.mainloop()
 
