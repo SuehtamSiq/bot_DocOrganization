@@ -12,17 +12,7 @@ def organize(extensoes, nomes_pastas):
         user = os.getlogin()
         diretorio = r'C:\Users\{}\Documents'.format(user)
         contador = 1
-
-        for nome_pasta in nomes_pastas_selecionados:
-            caminho_pasta = os.path.join(diretorio, nome_pasta)
-
-            while os.path.exists(caminho_pasta):
-                # Se a pasta já existe, adiciona um número sequencial ao final do nome
-                nome_pasta = f'{nome_pasta}_{contador}'
-                contador += 1
-                caminho_pasta = os.path.join(diretorio, nome_pasta) # Caminho completo para a pasta
-
-            os.mkdir(caminho_pasta)  # Cria a nova pasta
+        arquivos_encontrados = False  # Variável para verificar se foram encontrados arquivos para organização
 
         # Obter o caminho para o diretório de downloads
         diretorio_down = r'C:\Users\{}\Downloads'.format(user)
@@ -31,16 +21,49 @@ def organize(extensoes, nomes_pastas):
         # Obter todos os arquivos com as extensões selecionadas na pasta de downloads
         arquivos = [f for f in os.listdir(pasta_downloads) if os.path.splitext(f)[1] in extensoes_selecionadas]
 
-        # Mover os arquivos para as respectivas pastas
-        for arquivo in arquivos:
-            caminho_arquivo = os.path.join(pasta_downloads, arquivo)
-            extensao = os.path.splitext(arquivo)[1]
-            for nome_pasta, ext in zip(nomes_pastas_selecionados, extensoes_selecionadas):
-                if ext == extensao:
-                    caminho_pasta = os.path.join(diretorio, nome_pasta)
-                    shutil.move(caminho_arquivo, caminho_pasta)
+        # Verificar se foram encontrados arquivos para organização
+        if arquivos:
+            for nome_pasta in nomes_pastas_selecionados:
+                caminho_pasta = os.path.join(diretorio, nome_pasta)
 
-        messagebox.showinfo('Sucesso', 'Pastas criadas com sucesso e arquivos movidos!')
+                while os.path.exists(caminho_pasta):
+                    # Se a pasta já existe, adiciona um número sequencial ao final do nome
+                    nome_pasta = f'{nome_pasta}_{contador}'
+                    contador += 1
+                    caminho_pasta = os.path.join(diretorio, nome_pasta)  # Caminho completo para a pasta
+
+                os.mkdir(caminho_pasta)  # Cria a nova pasta
+
+            # Mover os arquivos para as respectivas pastas
+            for arquivo in arquivos:
+                caminho_arquivo = os.path.join(pasta_downloads, arquivo)
+                extensao = os.path.splitext(arquivo)[1]
+                for nome_pasta, ext in zip(nomes_pastas_selecionados, extensoes_selecionadas):
+                    if ext == extensao:
+                        caminho_pasta = os.path.join(diretorio, nome_pasta)
+                        shutil.move(caminho_arquivo, caminho_pasta)
+                        arquivos_encontrados = True  # Indica que pelo menos um arquivo foi encontrado
+
+            messagebox.showinfo('Sucesso', 'Pastas criadas com sucesso e arquivos movidos!')
+        else:
+            resposta = messagebox.askquestion('Atenção',
+                                              'Não foram encontrados arquivos com as extensões selecionadas. '
+                                              'Deseja criar as pastas mesmo assim?')
+            if resposta == 'yes':
+                for nome_pasta in nomes_pastas_selecionados:
+                    caminho_pasta = os.path.join(diretorio, nome_pasta)
+
+                    while os.path.exists(caminho_pasta):
+                        # Se a pasta já existe, adiciona um número sequencial ao final do nome
+                        nome_pasta = f'{nome_pasta}_{contador}'
+                        contador += 1
+                        caminho_pasta = os.path.join(diretorio, nome_pasta)  # Caminho completo para a pasta
+
+                    os.mkdir(caminho_pasta)  # Cria a nova pasta
+
+                messagebox.showinfo('Sucesso', 'Pastas criadas com sucesso!')
+            else:
+                messagebox.showinfo('Aviso', 'Nenhuma pasta foi criada.')
 
     else:
         messagebox.showwarning('Atenção', 'Você precisa selecionar pelo menos uma extensão.')
