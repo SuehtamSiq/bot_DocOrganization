@@ -1,21 +1,20 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import filedialog
 import os
 import shutil
 
 
-def organize(extensoes, nomes_pastas):
+def organize(extensoes, nomes_pastas, diretorio_destino):
     extensoes_selecionadas = [ext for ext, var in zip(extensoes, checkbox_vars) if var.get()]
     nomes_pastas_selecionados = [nome for nome, var in zip(nomes_pastas, checkbox_vars) if var.get()]
 
     if extensoes_selecionadas:
-        user = os.getlogin()
-        diretorio = r'C:\Users\{}\Documents'.format(user)
         contador = 1
         arquivos_encontrados = False  # Variável para verificar se foram encontrados arquivos para organização
 
         # Obter o caminho para o diretório de downloads
-        diretorio_down = r'C:\Users\{}\Downloads'.format(user)
+        diretorio_down = r'C:\Users\{}\Downloads'.format(os.getlogin())
         pasta_downloads = os.path.join(diretorio_down)
 
         # Obter todos os arquivos com as extensões selecionadas na pasta de downloads
@@ -24,13 +23,13 @@ def organize(extensoes, nomes_pastas):
         # Verificar se foram encontrados arquivos para organização
         if arquivos:
             for nome_pasta in nomes_pastas_selecionados:
-                caminho_pasta = os.path.join(diretorio, nome_pasta)
+                caminho_pasta = os.path.join(diretorio_destino, nome_pasta)
 
                 while os.path.exists(caminho_pasta):
                     # Se a pasta já existe, adiciona um número sequencial ao final do nome
                     nome_pasta = f'{nome_pasta}_{contador}'
                     contador += 1
-                    caminho_pasta = os.path.join(diretorio, nome_pasta)  # Caminho completo para a pasta
+                    caminho_pasta = os.path.join(diretorio_destino, nome_pasta)  # Caminho completo para a pasta
 
                 os.mkdir(caminho_pasta)  # Cria a nova pasta
 
@@ -40,7 +39,7 @@ def organize(extensoes, nomes_pastas):
                 extensao = os.path.splitext(arquivo)[1]
                 for nome_pasta, ext in zip(nomes_pastas_selecionados, extensoes_selecionadas):
                     if ext == extensao:
-                        caminho_pasta = os.path.join(diretorio, nome_pasta)
+                        caminho_pasta = os.path.join(diretorio_destino, nome_pasta)
                         shutil.move(caminho_arquivo, caminho_pasta)
                         arquivos_encontrados = True  # Indica que pelo menos um arquivo foi encontrado
 
@@ -51,13 +50,13 @@ def organize(extensoes, nomes_pastas):
                                               'Deseja criar as pastas mesmo assim?')
             if resposta == 'yes':
                 for nome_pasta in nomes_pastas_selecionados:
-                    caminho_pasta = os.path.join(diretorio, nome_pasta)
+                    caminho_pasta = os.path.join(diretorio_destino, nome_pasta)
 
                     while os.path.exists(caminho_pasta):
                         # Se a pasta já existe, adiciona um número sequencial ao final do nome
                         nome_pasta = f'{nome_pasta}_{contador}'
                         contador += 1
-                        caminho_pasta = os.path.join(diretorio, nome_pasta)  # Caminho completo para a pasta
+                        caminho_pasta = os.path.join(diretorio_destino, nome_pasta)  # Caminho completo para a pasta
 
                     os.mkdir(caminho_pasta)  # Cria a nova pasta
 
@@ -89,7 +88,10 @@ def open_second_window():
 
 
 def close_second_window(window, extensoes, nomes_pastas):
-    organize(extensoes, nomes_pastas)
+    # Opcão para selecionar o diretório de destino.
+    diretorio_destino = filedialog.askdirectory(title='Selecione o diretório de destino')
+    if diretorio_destino:
+        organize(extensoes, nomes_pastas, diretorio_destino)
     window.destroy()
 
 
