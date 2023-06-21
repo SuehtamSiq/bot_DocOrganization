@@ -72,20 +72,32 @@ def open_second_window():
     # Criando janela secundária
     second_window = tk.Toplevel(janela)
     second_window.title('DocOgn')
-    second_window.geometry('200x100')
+    second_window.geometry('300x200')
+    second_window.configure(bg='#EFEFEF')
+
+    # Adicionando uma frase indutora
+    frase_indutora = tk.Label(second_window, text='Selecione as extensões das quais deseja organizar:',
+                              font=('Arial', 9), bg='#EFEFEF')
+    frase_indutora.pack(pady=10)
 
     # Criando caixa de seleção e botão para cada extensão desejada
-    extensoes = ['.pdf', '.docx', '.xlsx']  # Exemplo de extensões
+    extensoes_predefinidas = ['.pdf', '.docx', '.xlsx']  # Exemplo de extensões
     nomes_pastas = ['Documents', 'WordFiles', 'ExcelFiles']  # Exemplo de nomes de pastas
 
-    for extensao, nome_pasta, var in zip(extensoes, nomes_pastas, checkbox_vars):
-        checkbox = tk.Checkbutton(second_window, text=extensao, variable=var)
+    for extensao, nome_pasta, var in zip(extensoes_predefinidas, nomes_pastas, checkbox_vars):
+        checkbox = tk.Checkbutton(second_window, text=extensao, variable=var, bg='#EFEFEF')
         checkbox.pack()
 
-    button = tk.Button(second_window, text='Avançar',
-                       command=lambda: close_second_window(second_window, extensoes, nomes_pastas))
-    button.pack()
+    # Adicionando espaço em branco
+    espaco_em_branco = tk.Label(second_window, text='', bg='#EFEFEF')
+    espaco_em_branco.pack(pady=10)
 
+    button = tk.Button(second_window, text='Avançar',
+                       command=lambda: close_second_window(second_window, extensoes_predefinidas, nomes_pastas)
+                       )
+    button.pack()  
+    
+   
 
 def close_second_window(window, extensoes, nomes_pastas):
     # Opcão para selecionar o diretório de destino.
